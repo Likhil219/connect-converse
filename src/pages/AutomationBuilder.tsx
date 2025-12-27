@@ -80,6 +80,7 @@ const mockPosts = [
 
 const triggerOptions = [
   { id: 'any', label: 'Any comment', description: 'Reply to all comments on this post' },
+  { id: 'exact', label: 'Exact comment match', description: 'Reply only when comment matches exactly' },
   { id: 'keyword', label: 'Specific keywords', description: 'Reply when comments contain specific words' },
   { id: 'emoji', label: 'Emoji reactions', description: 'Reply when comments include specific emojis' },
 ];
@@ -99,6 +100,7 @@ export default function AutomationBuilder() {
   const [triggerType, setTriggerType] = useState('any');
   const [keywords, setKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState('');
+  const [exactTriggerComment, setExactTriggerComment] = useState('');
   const [replyMessage, setReplyMessage] = useState("Hey {name}! 👋 Thanks for your comment! Here's what you requested: {link}");
   const [automationName, setAutomationName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -414,6 +416,39 @@ export default function AutomationBuilder() {
                     ))}
                   </div>
 
+                  {/* Exact Comment Match */}
+                  {triggerType === 'exact' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="mb-6"
+                    >
+                      <label className="block text-sm font-medium mb-2">
+                        Exact comment to trigger reply
+                      </label>
+                      <Input
+                        placeholder="e.g., INFO, WANT, LINK, 🔥"
+                        value={exactTriggerComment}
+                        onChange={(e) => setExactTriggerComment(e.target.value)}
+                        className="mb-2"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        The automation will only trigger when someone comments this exact text (case-insensitive)
+                      </p>
+                      {exactTriggerComment && (
+                        <div className="mt-4 p-4 rounded-xl bg-success/10 border border-success/20">
+                          <div className="flex items-center gap-2 text-success text-sm font-medium mb-2">
+                            <Check className="w-4 h-4" />
+                            Preview
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            When someone comments "<span className="font-semibold text-foreground">{exactTriggerComment}</span>", they'll receive your auto-reply DM
+                          </p>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
                   {triggerType === 'keyword' && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
@@ -452,6 +487,48 @@ export default function AutomationBuilder() {
                       )}
                       <p className="text-xs text-muted-foreground mt-2">
                         Examples: "info", "price", "link", "want", "🔥"
+                      </p>
+                    </motion.div>
+                  )}
+
+                  {triggerType === 'emoji' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="mb-6"
+                    >
+                      <label className="block text-sm font-medium mb-2">Emojis to trigger reply</label>
+                      <div className="flex gap-2 mb-3">
+                        <Input
+                          placeholder="Type an emoji and press Enter"
+                          value={keywordInput}
+                          onChange={(e) => setKeywordInput(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
+                        />
+                        <Button onClick={addKeyword} variant="secondary">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      {keywords.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {keywords.map((keyword) => (
+                            <span 
+                              key={keyword}
+                              className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium flex items-center gap-2"
+                            >
+                              {keyword}
+                              <button 
+                                onClick={() => removeKeyword(keyword)}
+                                className="hover:text-destructive transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Examples: 🔥, ❤️, 💯, 🙌
                       </p>
                     </motion.div>
                   )}
