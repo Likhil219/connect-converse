@@ -10,6 +10,7 @@ import Pricing from "./pages/Pricing";
 import Features from "./pages/Features";
 import Dashboard from "./pages/Dashboard";
 import Automations from "./pages/Automations";
+import AutomationBuilder from "./pages/AutomationBuilder";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/features" element={<Features />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/automations" element={<Automations />} />
+          <Route path="/dashboard/automations/create" element={<AutomationBuilder />} />
           <Route path="/dashboard/analytics" element={<Analytics />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
