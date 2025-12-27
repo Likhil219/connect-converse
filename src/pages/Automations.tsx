@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { motion } from 'framer-motion';
 import { 
@@ -93,6 +94,7 @@ const automations = [
 ];
 
 export default function Automations() {
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
@@ -112,7 +114,7 @@ export default function Automations() {
             <h1 className="text-2xl lg:text-3xl font-black">Automations</h1>
             <p className="text-muted-foreground">Manage your Instagram automation workflows</p>
           </div>
-          <Button variant="gradient">
+          <Button variant="gradient" onClick={() => navigate('/dashboard/automations/create')}>
             <Plus className="w-4 h-4 mr-2" />
             Create Automation
           </Button>
@@ -179,7 +181,7 @@ export default function Automations() {
             </div>
             <h3 className="text-xl font-bold mb-2">No automations found</h3>
             <p className="text-muted-foreground mb-4">Create your first automation to get started</p>
-            <Button variant="gradient">
+            <Button variant="gradient" onClick={() => navigate('/dashboard/automations/create')}>
               <Plus className="w-4 h-4 mr-2" />
               Create Automation
             </Button>
