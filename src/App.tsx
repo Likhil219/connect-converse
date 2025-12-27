@@ -12,6 +12,11 @@ import Dashboard from "./pages/Dashboard";
 import Automations from "./pages/Automations";
 import AutomationBuilder from "./pages/AutomationBuilder";
 import Analytics from "./pages/Analytics";
+import Inbox from "./pages/Inbox";
+import Contacts from "./pages/Contacts";
+import Templates from "./pages/Templates";
+import Settings from "./pages/Settings";
+import Integrations from "./pages/Integrations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +37,11 @@ const App = () => (
           <Route path="/dashboard/automations" element={<Automations />} />
           <Route path="/dashboard/automations/create" element={<AutomationBuilder />} />
           <Route path="/dashboard/analytics" element={<Analytics />} />
+          <Route path="/dashboard/inbox" element={<Inbox />} />
+          <Route path="/dashboard/contacts" element={<Contacts />} />
+          <Route path="/dashboard/templates" element={<Templates />} />
+          <Route path="/dashboard/settings" element={<Settings />} />
+          <Route path="/dashboard/integrations" element={<Integrations />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

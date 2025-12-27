@@ -60,9 +60,11 @@ export function HeroSection() {
                 <Sparkles className="w-5 h-5 ml-1" />
               </Link>
             </Button>
-            <Button variant="heroSecondary" size="xl">
-              <Play className="w-5 h-5 mr-1" />
-              Watch Demo
+            <Button variant="heroSecondary" size="xl" asChild>
+              <Link to="/features">
+                <Play className="w-5 h-5 mr-1" />
+                See How It Works
+              </Link>
             </Button>
           </motion.div>
 

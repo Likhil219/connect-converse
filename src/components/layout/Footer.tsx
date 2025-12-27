@@ -5,26 +5,10 @@ const footerLinks = {
   Product: [
     { name: 'Features', href: '/features' },
     { name: 'Pricing', href: '/pricing' },
-    { name: 'Templates', href: '/templates' },
-    { name: 'API', href: '/docs/api' },
   ],
-  'Use Cases': [
-    { name: 'E-commerce', href: '/use-cases/ecommerce' },
-    { name: 'Creators', href: '/use-cases/creators' },
-    { name: 'Coaches', href: '/use-cases/coaches' },
-    { name: 'Agencies', href: '/use-cases/agencies' },
-  ],
-  Resources: [
-    { name: 'Blog', href: '/blog' },
-    { name: 'Help Center', href: '/help' },
-    { name: 'Documentation', href: '/docs' },
-    { name: 'Community', href: '/community' },
-  ],
-  Company: [
-    { name: 'About', href: '/about' },
-    { name: 'Careers', href: '/careers' },
-    { name: 'Contact', href: '/contact' },
-    { name: 'Press', href: '/press' },
+  Support: [
+    { name: 'Login', href: '/login' },
+    { name: 'Sign Up', href: '/signup' },
   ],
 };
 
@@ -86,21 +70,10 @@ export function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-center gap-4">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} InstaFlow. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Terms of Service
-            </Link>
-            <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Privacy Policy
-            </Link>
-            <Link to="/security" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Security
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
