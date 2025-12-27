@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Zap, ChevronDown } from 'lucide-react';
+import { Menu, X, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
   { name: 'Features', href: '/features' },
   { name: 'Pricing', href: '/pricing' },
-  { name: 'Use Cases', href: '/use-cases', hasDropdown: true },
-  { name: 'Resources', href: '/resources' },
 ];
 
 export function Navbar() {
@@ -42,7 +40,6 @@ export function Navbar() {
                 )}
               >
                 {link.name}
-                {link.hasDropdown && <ChevronDown className="w-4 h-4" />}
               </Link>
             ))}
           </div>

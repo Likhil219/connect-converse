@@ -102,8 +102,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="bg-gradient-primary rounded-xl p-4 text-primary-foreground">
             <div className="font-semibold mb-1">Upgrade to Business</div>
             <p className="text-sm opacity-80 mb-3">Get more DMs and team features</p>
-            <Button variant="secondary" size="sm" className="w-full">
-              Upgrade Now
+            <Button variant="secondary" size="sm" className="w-full" asChild>
+              <Link to="/pricing">Upgrade Now</Link>
             </Button>
           </div>
         </div>
