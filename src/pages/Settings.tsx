@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { motion } from 'framer-motion';
-import { User, Instagram, Bell, CreditCard, Key, Shield } from 'lucide-react';
+import { User, Instagram, Bell, CreditCard, Shield } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
 
 const tabs = [
   { id: 'profile', label: 'Profile', icon: User },
@@ -19,13 +19,17 @@ const tabs = [
 ];
 
 export default function Settings() {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
     weekly: false,
   });
+
+  // Get user display info from Supabase user metadata
+  const userName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userEmail = user?.email || '';
 
   const handleSave = () => {
     toast.success('Settings saved successfully!');
@@ -74,7 +78,7 @@ export default function Settings() {
                   <CardContent className="space-y-6">
                     <div className="flex items-center gap-4">
                       <img
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`}
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userEmail}`}
                         alt="Profile"
                         className="w-20 h-20 rounded-full"
                       />
@@ -83,11 +87,11 @@ export default function Settings() {
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium mb-2 block">Name</label>
-                        <Input defaultValue={user?.name} />
+                        <Input defaultValue={userName} />
                       </div>
                       <div>
                         <label className="text-sm font-medium mb-2 block">Email</label>
-                        <Input defaultValue={user?.email} />
+                        <Input defaultValue={userEmail} disabled />
                       </div>
                     </div>
                     <Button variant="gradient" onClick={handleSave}>Save Changes</Button>

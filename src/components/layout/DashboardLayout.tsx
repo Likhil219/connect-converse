@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const sidebarLinks = [
@@ -38,15 +38,17 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, signOut } = useAuth();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
-  if (!isAuthenticated) return null;
+  // Get user display info from Supabase user metadata
+  const userName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userEmail = user?.email || '';
+  const userAvatar = user?.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userEmail}`;
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -66,12 +68,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="p-4 border-b border-border">
           <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors">
             <img
-              src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`}
+              src={userAvatar}
               alt=""
               className="w-10 h-10 rounded-full"
             />
             <div className="flex-1 text-left">
-              <div className="font-medium text-sm">{user?.name}</div>
+              <div className="font-medium text-sm">{userName}</div>
               <div className="text-xs text-muted-foreground">Pro Plan</div>
             </div>
             <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -111,10 +113,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Logout */}
         <div className="p-4 border-t border-border">
           <button
-            onClick={() => {
-              logout();
-              navigate('/');
-            }}
+            onClick={handleLogout}
             className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           >
             <LogOut className="w-5 h-5" />
@@ -145,12 +144,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
             <div className="flex items-center gap-3">
               <img
-                src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`}
+                src={userAvatar}
                 alt=""
                 className="w-8 h-8 rounded-full"
               />
               <div className="hidden sm:block">
-                <div className="text-sm font-medium">{user?.name}</div>
+                <div className="text-sm font-medium">{userName}</div>
               </div>
             </div>
           </div>

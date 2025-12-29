@@ -1,42 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, Instagram, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().trim().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(1, { message: "Password is required" }),
+});
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, loginWithInstagram, isLoading } = useAuthStore();
+  const { signIn, signInWithInstagram, user, isLoading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate('/dashboard');
+    }
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (!email || !password) {
-      setError('Please fill in all fields');
+    // Validate input
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) {
+      setError(validation.error.errors[0].message);
       return;
     }
 
-    const success = await login(email, password);
-    if (success) {
-      navigate('/dashboard');
+    setIsSubmitting(true);
+    const { error } = await signIn(email, password);
+    setIsSubmitting(false);
+
+    if (error) {
+      setError(error);
     } else {
-      setError('Invalid email or password');
+      navigate('/dashboard');
     }
   };
 
   const handleInstagramLogin = async () => {
-    const success = await loginWithInstagram();
-    if (success) {
-      navigate('/dashboard');
+    setIsSubmitting(true);
+    const { error } = await signInWithInstagram();
+    setIsSubmitting(false);
+
+    if (error) {
+      setError(error);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -65,9 +95,9 @@ export default function Login() {
             variant="outline"
             className="w-full mb-4 h-12"
             onClick={handleInstagramLogin}
-            disabled={isLoading}
+            disabled={isSubmitting}
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
             ) : (
               <Instagram className="w-5 h-5 mr-2" />
@@ -131,9 +161,9 @@ export default function Login() {
               type="submit"
               variant="gradient"
               className="w-full h-12"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 'Log in'
