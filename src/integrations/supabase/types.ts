@@ -14,16 +14,470 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analytics: {
+        Row: {
+          automations_triggered: number | null
+          created_at: string | null
+          date: string
+          id: string
+          messages_received: number | null
+          messages_sent: number | null
+          new_contacts: number | null
+          response_rate: number | null
+          user_id: string
+        }
+        Insert: {
+          automations_triggered?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          messages_received?: number | null
+          messages_sent?: number | null
+          new_contacts?: number | null
+          response_rate?: number | null
+          user_id: string
+        }
+        Update: {
+          automations_triggered?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          messages_received?: number | null
+          messages_sent?: number | null
+          new_contacts?: number | null
+          response_rate?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      api_keys: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          key_hash: string
+          last_used_at: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash: string
+          last_used_at?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash?: string
+          last_used_at?: string | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      automations: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          instagram_account_id: string | null
+          messages_sent: number | null
+          name: string
+          response_message: string | null
+          response_rate: number | null
+          status: Database["public"]["Enums"]["automation_status"] | null
+          trigger_keywords: string[] | null
+          trigger_type: Database["public"]["Enums"]["trigger_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          instagram_account_id?: string | null
+          messages_sent?: number | null
+          name: string
+          response_message?: string | null
+          response_rate?: number | null
+          status?: Database["public"]["Enums"]["automation_status"] | null
+          trigger_keywords?: string[] | null
+          trigger_type: Database["public"]["Enums"]["trigger_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          instagram_account_id?: string | null
+          messages_sent?: number | null
+          name?: string
+          response_message?: string | null
+          response_rate?: number | null
+          status?: Database["public"]["Enums"]["automation_status"] | null
+          trigger_keywords?: string[] | null
+          trigger_type?: Database["public"]["Enums"]["trigger_type"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automations_instagram_account_id_fkey"
+            columns: ["instagram_account_id"]
+            isOneToOne: false
+            referencedRelation: "instagram_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          followers_count: number | null
+          id: string
+          instagram_id: string | null
+          last_interaction_at: string | null
+          name: string | null
+          notes: string | null
+          phone: string | null
+          profile_picture_url: string | null
+          status: Database["public"]["Enums"]["contact_status"] | null
+          tags: string[] | null
+          updated_at: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          followers_count?: number | null
+          id?: string
+          instagram_id?: string | null
+          last_interaction_at?: string | null
+          name?: string | null
+          notes?: string | null
+          phone?: string | null
+          profile_picture_url?: string | null
+          status?: Database["public"]["Enums"]["contact_status"] | null
+          tags?: string[] | null
+          updated_at?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          followers_count?: number | null
+          id?: string
+          instagram_id?: string | null
+          last_interaction_at?: string | null
+          name?: string | null
+          notes?: string | null
+          phone?: string | null
+          profile_picture_url?: string | null
+          status?: Database["public"]["Enums"]["contact_status"] | null
+          tags?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      instagram_accounts: {
+        Row: {
+          access_token: string | null
+          created_at: string | null
+          daily_message_limit: number | null
+          followers_count: number | null
+          id: string
+          instagram_id: string
+          is_connected: boolean | null
+          last_synced_at: string | null
+          messages_sent_today: number | null
+          profile_picture_url: string | null
+          updated_at: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string | null
+          daily_message_limit?: number | null
+          followers_count?: number | null
+          id?: string
+          instagram_id: string
+          is_connected?: boolean | null
+          last_synced_at?: string | null
+          messages_sent_today?: number | null
+          profile_picture_url?: string | null
+          updated_at?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string | null
+          daily_message_limit?: number | null
+          followers_count?: number | null
+          id?: string
+          instagram_id?: string
+          is_connected?: boolean | null
+          last_synced_at?: string | null
+          messages_sent_today?: number | null
+          profile_picture_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          automation_id: string | null
+          contact_id: string | null
+          content: string
+          created_at: string | null
+          direction: string
+          id: string
+          sent_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          automation_id?: string | null
+          contact_id?: string | null
+          content: string
+          created_at?: string | null
+          direction: string
+          id?: string
+          sent_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          automation_id?: string | null
+          contact_id?: string | null
+          content?: string
+          created_at?: string | null
+          direction?: string
+          id?: string
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "automations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company: string | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          plan: Database["public"]["Enums"]["subscription_plan"] | null
+          timezone: string | null
+          two_factor_enabled: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string | null
+          email: string
+          id: string
+          name: string
+          plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          timezone?: string | null
+          two_factor_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"] | null
+          timezone?: string | null
+          two_factor_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          accepted_at: string | null
+          id: string
+          invited_at: string | null
+          member_id: string
+          owner_id: string
+          permissions: string[] | null
+          role: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          id?: string
+          invited_at?: string | null
+          member_id: string
+          owner_id: string
+          permissions?: string[] | null
+          role?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          id?: string
+          invited_at?: string | null
+          member_id?: string
+          owner_id?: string
+          permissions?: string[] | null
+          role?: string | null
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          usage_count: number | null
+          user_id: string
+          variables: string[] | null
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id: string
+          variables?: string[] | null
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string
+          variables?: string[] | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      automation_status: "active" | "paused" | "draft"
+      contact_status: "active" | "inactive" | "blocked"
+      subscription_plan: "free" | "pro" | "business" | "enterprise"
+      trigger_type:
+        | "keyword"
+        | "comment"
+        | "story_mention"
+        | "story_reply"
+        | "new_follower"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +604,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      automation_status: ["active", "paused", "draft"],
+      contact_status: ["active", "inactive", "blocked"],
+      subscription_plan: ["free", "pro", "business", "enterprise"],
+      trigger_type: [
+        "keyword",
+        "comment",
+        "story_mention",
+        "story_reply",
+        "new_follower",
+      ],
+    },
   },
 } as const
