@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { 
   Plus, 
   Search, 
-  Filter,
   Grid3X3,
   List,
   Play,
@@ -13,7 +12,7 @@ import {
   Copy,
   BarChart3,
   Trash2,
-  MoreVertical,
+  Edit,
   MessageCircle,
   Zap,
   Users,
@@ -23,6 +22,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const automations = [
   {
@@ -95,15 +101,69 @@ const automations = [
 
 export default function Automations() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
+  const [automationList, setAutomationList] = useState(automations);
 
-  const filteredAutomations = automations.filter((automation) => {
+  const filteredAutomations = automationList.filter((automation) => {
     const matchesSearch = automation.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || automation.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handlePauseResume = (id: number) => {
+    setAutomationList(prev => prev.map(a => {
+      if (a.id === id) {
+        const newStatus = a.status === 'active' ? 'paused' : 'active';
+        toast({
+          title: newStatus === 'active' ? 'Automation Resumed' : 'Automation Paused',
+          description: `"${a.name}" is now ${newStatus}.`,
+        });
+        return { ...a, status: newStatus };
+      }
+      return a;
+    }));
+  };
+
+  const handleCopy = (automation: typeof automations[0]) => {
+    const newAutomation = {
+      ...automation,
+      id: Date.now(),
+      name: `${automation.name} (Copy)`,
+      messages: 0,
+      responseRate: 0,
+      lastActive: 'Never',
+    };
+    setAutomationList(prev => [newAutomation, ...prev]);
+    toast({
+      title: 'Automation Duplicated',
+      description: `"${automation.name}" has been copied.`,
+    });
+  };
+
+  const handleAnalytics = (automation: typeof automations[0]) => {
+    toast({
+      title: 'Opening Analytics',
+      description: `Viewing stats for "${automation.name}"`,
+    });
+    navigate('/dashboard/analytics');
+  };
+
+  const handleEdit = (id: number) => {
+    navigate(`/dashboard/automations/create?edit=${id}`);
+  };
+
+  const handleDelete = (id: number) => {
+    const automation = automationList.find(a => a.id === id);
+    setAutomationList(prev => prev.filter(a => a.id !== id));
+    toast({
+      title: 'Automation Deleted',
+      description: `"${automation?.name}" has been removed.`,
+      variant: 'destructive',
+    });
+  };
 
   return (
     <DashboardLayout>
@@ -210,9 +270,6 @@ export default function Automations() {
                           {automation.status}
                         </div>
                       </div>
-                      <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
-                        <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                      </button>
                     </div>
 
                     <h3 className="font-bold mb-1">{automation.name}</h3>
@@ -229,31 +286,71 @@ export default function Automations() {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
-                      <Button
-                        variant={automation.status === 'active' ? 'outline' : 'default'}
-                        size="sm"
-                        className="flex-1"
-                      >
-                        {automation.status === 'active' ? (
-                          <>
-                            <Pause className="w-4 h-4 mr-1" />
-                            Pause
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-4 h-4 mr-1" />
-                            Resume
-                          </>
-                        )}
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <BarChart3 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <TooltipProvider>
+                      <div className="mt-4 pt-4 border-t border-border flex items-center gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant={automation.status === 'active' ? 'outline' : 'default'}
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handlePauseResume(automation.id)}
+                            >
+                              {automation.status === 'active' ? (
+                                <>
+                                  <Pause className="w-4 h-4 mr-1" />
+                                  Pause
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="w-4 h-4 mr-1" />
+                                  Resume
+                                </>
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {automation.status === 'active' ? 'Pause automation' : 'Resume automation'}
+                          </TooltipContent>
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" onClick={() => handleCopy(automation)}>
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Duplicate</TooltipContent>
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" onClick={() => handleAnalytics(automation)}>
+                              <BarChart3 className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Analytics</TooltipContent>
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" onClick={() => handleEdit(automation.id)}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit</TooltipContent>
+                        </Tooltip>
+                        
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(automation.id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Delete</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -300,17 +397,58 @@ export default function Automations() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant={automation.status === 'active' ? 'outline' : 'default'}
-                          size="sm"
-                        >
-                          {automation.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      <TooltipProvider>
+                        <div className="flex items-center gap-1">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant={automation.status === 'active' ? 'outline' : 'default'}
+                                size="sm"
+                                onClick={() => handlePauseResume(automation.id)}
+                              >
+                                {automation.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{automation.status === 'active' ? 'Pause' : 'Resume'}</TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="sm" onClick={() => handleCopy(automation)}>
+                                <Copy className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Duplicate</TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="sm" onClick={() => handleAnalytics(automation)}>
+                                <BarChart3 className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Analytics</TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="sm" onClick={() => handleEdit(automation.id)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit</TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(automation.id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
                     </div>
                   </CardContent>
                 </Card>
