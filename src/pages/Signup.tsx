@@ -1,19 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, Instagram, Eye, EyeOff, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+
+const signupSchema = z.object({
+  name: z.string().trim().min(1, { message: "Name is required" }).max(100, { message: "Name must be less than 100 characters" }),
+  email: z.string().trim().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+});
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { signup, loginWithInstagram, isLoading } = useAuthStore();
+  const { signUp, signInWithInstagram, user, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate('/dashboard');
+    }
+  }, [user, authLoading, navigate]);
 
   const passwordStrength = () => {
     let strength = 0;
@@ -28,30 +45,45 @@ export default function Signup() {
     e.preventDefault();
     setError('');
     
-    if (!name || !email || !password) {
-      setError('Please fill in all fields');
+    // Validate input
+    const validation = signupSchema.safeParse({ name, email, password });
+    if (!validation.success) {
+      setError(validation.error.errors[0].message);
       return;
     }
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
+    setIsSubmitting(true);
+    const { error } = await signUp(email, password, name);
+    setIsSubmitting(false);
 
-    const success = await signup(name, email, password);
-    if (success) {
-      navigate('/dashboard');
+    if (error) {
+      setError(error);
     } else {
-      setError('Something went wrong. Please try again.');
+      toast({
+        title: "Account created!",
+        description: "Please check your email to confirm your account, or continue to the dashboard.",
+      });
+      navigate('/dashboard');
     }
   };
 
   const handleInstagramSignup = async () => {
-    const success = await loginWithInstagram();
-    if (success) {
-      navigate('/dashboard');
+    setIsSubmitting(true);
+    const { error } = await signInWithInstagram();
+    setIsSubmitting(false);
+
+    if (error) {
+      setError(error);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -126,9 +158,9 @@ export default function Signup() {
             variant="outline"
             className="w-full mb-4 h-12"
             onClick={handleInstagramSignup}
-            disabled={isLoading}
+            disabled={isSubmitting}
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
             ) : (
               <Instagram className="w-5 h-5 mr-2" />
@@ -216,9 +248,9 @@ export default function Signup() {
               type="submit"
               variant="gradient"
               className="w-full h-12"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 'Create account'
