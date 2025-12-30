@@ -1,27 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Zap, Instagram, Eye, EyeOff, Loader2, Check } from 'lucide-react';
+import { Zap, Instagram, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { z } from 'zod';
-
-const signupSchema = z.object({
-  name: z.string().trim().min(1, { message: "Name is required" }).max(100, { message: "Name must be less than 100 characters" }),
-  email: z.string().trim().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-});
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { signUp, signInWithInstagram, user, isLoading: authLoading } = useAuth();
-  const { toast } = useToast();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const { signInWithInstagram, user, isLoading: authLoading } = useAuth();
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,42 +18,8 @@ export default function Signup() {
     }
   }, [user, authLoading, navigate]);
 
-  const passwordStrength = () => {
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
-    return strength;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    // Validate input
-    const validation = signupSchema.safeParse({ name, email, password });
-    if (!validation.success) {
-      setError(validation.error.errors[0].message);
-      return;
-    }
-
-    setIsSubmitting(true);
-    const { error } = await signUp(email, password, name);
-    setIsSubmitting(false);
-
-    if (error) {
-      setError(error);
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Please check your email to confirm your account, or continue to the dashboard.",
-      });
-      navigate('/dashboard');
-    }
-  };
-
   const handleInstagramSignup = async () => {
+    setError('');
     setIsSubmitting(true);
     const { error } = await signInWithInstagram();
     setIsSubmitting(false);
@@ -153,10 +105,16 @@ export default function Signup() {
             Start your 14-day free trial. No credit card required.
           </p>
 
+          {error && (
+            <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm mb-4">
+              {error}
+            </div>
+          )}
+
           {/* Instagram OAuth */}
           <Button
-            variant="outline"
-            className="w-full mb-4 h-12"
+            variant="gradient"
+            className="w-full h-12"
             onClick={handleInstagramSignup}
             disabled={isSubmitting}
           >
@@ -168,102 +126,12 @@ export default function Signup() {
             Sign up with Instagram
           </Button>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Full name</label>
-              <Input
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-12"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Email</label>
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
-              <div className="relative">
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a strong password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {password && (
-                <div className="mt-2 flex gap-1">
-                  {[1, 2, 3, 4].map((level) => (
-                    <div
-                      key={level}
-                      className={`h-1.5 flex-1 rounded-full transition-colors ${
-                        passwordStrength() >= level
-                          ? level <= 1
-                            ? 'bg-destructive'
-                            : level <= 2
-                            ? 'bg-warning'
-                            : 'bg-success'
-                          : 'bg-border'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              variant="gradient"
-              className="w-full h-12"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                'Create account'
-              )}
-            </Button>
-
-            <p className="text-xs text-muted-foreground text-center">
-              By signing up, you agree to our{' '}
-              <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>
-              {' '}and{' '}
-              <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-            </p>
-          </form>
+          <p className="text-xs text-muted-foreground text-center mt-6">
+            By signing up, you agree to our{' '}
+            <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>
+            {' '}and{' '}
+            <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+          </p>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
