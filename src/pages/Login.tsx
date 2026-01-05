@@ -1,13 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Zap, Instagram, Loader2 } from 'lucide-react';
+import { Zap, Instagram, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().trim().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(1, { message: "Password is required" }),
+});
 
 export default function Login() {
   const navigate = useNavigate();
-  const { signInWithInstagram, user, isLoading: authLoading } = useAuth();
+  const { signIn, signInWithInstagram, user, isLoading: authLoading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -18,8 +28,29 @@ export default function Login() {
     }
   }, [user, authLoading, navigate]);
 
-  const handleInstagramLogin = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError('');
+    
+    // Validate input
+    const validation = loginSchema.safeParse({ email, password });
+    if (!validation.success) {
+      setError(validation.error.errors[0].message);
+      return;
+    }
+
+    setIsSubmitting(true);
+    const { error } = await signIn(email, password);
+    setIsSubmitting(false);
+
+    if (error) {
+      setError(error);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
+  const handleInstagramLogin = async () => {
     setIsSubmitting(true);
     const { error } = await signInWithInstagram();
     setIsSubmitting(false);
@@ -56,19 +87,13 @@ export default function Login() {
 
           <h1 className="text-3xl font-black mb-2">Welcome back</h1>
           <p className="text-muted-foreground mb-8">
-            Log in with your Instagram account to continue automating
+            Log in to your account to continue automating your Instagram
           </p>
-
-          {error && (
-            <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm mb-4">
-              {error}
-            </div>
-          )}
 
           {/* Instagram OAuth */}
           <Button
-            variant="gradient"
-            className="w-full h-12"
+            variant="outline"
+            className="w-full mb-4 h-12"
             onClick={handleInstagramLogin}
             disabled={isSubmitting}
           >
@@ -79,6 +104,72 @@ export default function Login() {
             )}
             Continue with Instagram
           </Button>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Email</label>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium">Password</label>
+                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-12 pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              variant="gradient"
+              className="w-full h-12"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                'Log in'
+              )}
+            </Button>
+          </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
