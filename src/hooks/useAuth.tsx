@@ -9,6 +9,8 @@ interface AuthContextType {
   isLoading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signInWithOtp: (email: string) => Promise<{ error: string | null }>;
+  verifyOtp: (email: string, token: string) => Promise<{ error: string | null }>;
   signInWithInstagram: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -66,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    // First verify credentials with password
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -74,6 +77,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         return { error: 'Invalid email or password. Please try again.' };
+      }
+      return { error: error.message };
+    }
+
+    return { error: null };
+  };
+
+  const signInWithOtp = async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false, // Don't create user, just verify existing
+      }
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { error: null };
+  };
+
+  const verifyOtp = async (email: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
+    });
+
+    if (error) {
+      if (error.message.includes('Token has expired')) {
+        return { error: 'Verification code has expired. Please request a new one.' };
+      }
+      if (error.message.includes('Invalid')) {
+        return { error: 'Invalid verification code. Please try again.' };
       }
       return { error: error.message };
     }
@@ -110,6 +148,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       signUp,
       signIn,
+      signInWithOtp,
+      verifyOtp,
       signInWithInstagram,
       signOut,
     }}>
