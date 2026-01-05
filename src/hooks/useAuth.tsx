@@ -8,6 +8,8 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
+  sendSignupOtp: (email: string) => Promise<{ error: string | null }>;
+  verifySignupOtp: (email: string, token: string, password: string, name: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signInWithOtp: (email: string) => Promise<{ error: string | null }>;
   verifyOtp: (email: string, token: string) => Promise<{ error: string | null }>;
@@ -62,6 +64,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: 'This email is already registered. Please log in instead.' };
       }
       return { error: error.message };
+    }
+
+    return { error: null };
+  };
+
+  const sendSignupOtp = async (email: string) => {
+    // Send OTP to email for verification before signup
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true, // Allow creating user via OTP
+      }
+    });
+
+    if (error) {
+      if (error.message.includes('rate limit')) {
+        return { error: 'Too many requests. Please wait a moment and try again.' };
+      }
+      return { error: error.message };
+    }
+
+    return { error: null };
+  };
+
+  const verifySignupOtp = async (email: string, token: string, password: string, name: string) => {
+    // Verify the OTP first
+    const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
+    });
+
+    if (verifyError) {
+      if (verifyError.message.includes('Token has expired')) {
+        return { error: 'Verification code has expired. Please request a new one.' };
+      }
+      if (verifyError.message.includes('Invalid')) {
+        return { error: 'Invalid verification code. Please try again.' };
+      }
+      return { error: verifyError.message };
+    }
+
+    // OTP verified, now update the user with password and metadata
+    if (data.user) {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+        data: {
+          name,
+          full_name: name,
+        }
+      });
+
+      if (updateError) {
+        return { error: updateError.message };
+      }
     }
 
     return { error: null };
@@ -147,6 +204,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       isLoading,
       signUp,
+      sendSignupOtp,
+      verifySignupOtp,
       signIn,
       signInWithOtp,
       verifyOtp,
