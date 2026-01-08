@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    // First verify credentials with password
+    // Directly sign in with password - no OTP step needed for password login
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -142,14 +142,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithOtp = async (email: string) => {
+    // Send OTP email using Supabase's built-in email service
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: false, // Don't create user, just verify existing
+        shouldCreateUser: false, // Don't create user, just send OTP for existing user
       }
     });
 
     if (error) {
+      if (error.message.includes('rate limit')) {
+        return { error: 'Too many requests. Please wait a moment and try again.' };
+      }
       return { error: error.message };
     }
 
